@@ -1,0 +1,88 @@
+version: '3.7'
+services: 
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        command: 'symfony server:start'
+        volumes:
+         - ./api:/var/www/html
+        depends_on:
+            - db
+        networks:
+         - blix_net
+         
+    consumer:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        command: 'php bin/console messenger:consume async'
+        volumes:
+         - ./consumer:/var/www/html
+        restart: on-failure
+        depends_on:
+            - db
+            - api
+        networks:
+         - blix_net
+         
+    web:
+        build:
+            context: ./web
+            dockerfile: Dockerfile
+        ports:
+            - "8090:80"
+        volumes:
+         - type: bind
+           source: ./web/app
+           target: /usr/share/nginx/html
+        networks:
+         - blix_net
+            
+    nginx:
+        image: nginx
+        ports:
+         - "80:80"
+         - "443:443"
+        volumes:
+         - type: bind
+           source: ./sites-enabled
+           target: /etc/nginx/conf.d
+        networks:
+            - blix_net
+        depends_on:
+            - api
+            
+    db:
+        image: mysql:5.7.22
+        environment:
+            MYSQL_DATABASE: blix
+            MYSQL_USER: blix
+            MYSQL_PASSWORD: blixgkwmskU93PKMN
+            MYSQL_ROOT_PASSWORD: rootgkwmskU93PKMN
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        volumes:
+            - dbdata:/var/lib/mysql/
+            - ./mysql/my.cnf:/etc/mysql/my.cnf
+        networks:
+            - blix_net
+
+    phpmyadmin:
+        image: phpmyadmin
+        ports:
+          - "8080:80"
+        environment:
+            PMA_HOST: "db"
+            MYSQL_ROOT_PASSWORD: rootgkwmskU93PKMN
+        depends_on:
+            - db
+        networks:
+            - blix_net
+
+networks:
+    blix_net:
+
+volumes:
+    dbdata:
+        driver: local

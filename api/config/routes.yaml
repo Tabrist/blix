@@ -1,0 +1,38 @@
+controllers:
+    resource: ../src/Controller/
+    type: annotation
+
+kernel:
+    resource: ../src/Kernel.php
+    type: annotation
+
+article_list:
+    path: /api/articles
+    controller: App\Controller\ArticleController::indexAction
+    methods: [GET]
+    
+article_create:
+    path: /api/articles
+    controller: App\Controller\ArticleController::storeAction
+    methods: [POST]
+    
+article_update:
+    path: /api/articles/{articleId}
+    controller: App\Controller\ArticleController::updateAction
+    methods: [POST]
+    requirements:
+        articleId: '\d+'  
+    
+article_show:
+  path: /api/articles/{articleId}
+  controller: App\Controller\ArticleController::showAction
+  methods: [GET]
+  requirements:
+    articleId: '\d+'    
+    
+article_delete:
+  path: /api/articles/{articleId}
+  controller: App\Controller\ArticleController::deleteAction
+  methods: [DELETE]
+  requirements:
+    articleId: '\d+' 
